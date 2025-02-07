@@ -39,7 +39,7 @@ public class ProcesadorFormularios {
         }
 
         if (metodo.equals("POST")) {
-            System.out.println("Procesando formulario con método POST y acción " + accion);
+            System.out.println("Procesando formulario con metodo POST y accion " + accion);
 
             try {
                 String parametros = "asignatura=practica1";
@@ -58,10 +58,10 @@ public class ProcesadorFormularios {
                         "matricula-id",
                         matricula);
 
-                System.out.println("Petición POST enviada correctamente.");
+                System.out.println("Peticion POST enviada correctamente.");
                 System.out.println("Respuesta del servidor: " + respuesta.body());
             } catch (Exception e) {
-                System.out.println("Error al enviar la petición POST: " + e.getMessage());
+                System.out.println("Error al enviar la peticion POST: " + e.getMessage());
             }
         }
     }

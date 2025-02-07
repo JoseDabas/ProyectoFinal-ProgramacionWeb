@@ -24,21 +24,19 @@ repositories {
 
 dependencies {
 
-    // Use JUnit Jupiter for testing.
-    testImplementation libs.junit.jupiter
-
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
 
     // This dependency is used by the application.
     implementation libs.guava
 
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // Para plantillas Thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.jsoup:jsoup:1.15.3' // Dependencia de Jsoup
+
 
     implementation 'io.javalin:javalin:5.6.2' // Dependencia de Javalin
 }
@@ -58,4 +56,8 @@ application {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+run{
+    standardInput = System.in
 }

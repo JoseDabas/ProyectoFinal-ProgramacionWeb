@@ -14,9 +14,9 @@ public class Main {
         // Procesar múltiples URLs hasta que el usuario decida salir
         while (continuar) {
             try {
-                System.out.print("Introduce una URL válida: ");
+                System.out.print("Introduce una URL valida: ");
                 if (!scanner.hasNextLine()) {
-                    System.out.println("No se encontró una línea de entrada.");
+                    System.out.println("No se encontro una linea de entrada.");
                     break;
                 }
                 String url = scanner.nextLine();
@@ -28,7 +28,7 @@ public class Main {
 
                 // Verificar si la URL es válida
                 if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                    System.out.println("La URL no es válida.");
+                    System.out.println("La URL no es vlida.");
                     continue;
                 }
 
@@ -49,9 +49,9 @@ public class Main {
                     AnalizadorHTML analizadorHtml = new AnalizadorHTML(respuesta.body());
 
                     // Imprimir la cantidad de líneas, párrafos e imágenes
-                    System.out.println("Cantidad de líneas: " + analizadorHtml.contar_Lineas());
-                    System.out.println("Cantidad de párrafos: " + analizadorHtml.contar_Parrafos());
-                    System.out.println("Cantidad de imágenes: " + analizadorHtml.contar_Imagenes());
+                    System.out.println("Cantidad de lineas: " + analizadorHtml.contar_Lineas());
+                    System.out.println("Cantidad de parrafos: " + analizadorHtml.contar_Parrafos());
+                    System.out.println("Cantidad de imagenes: " + analizadorHtml.contar_Imagenes());
                     System.out.println(
                             "Cantidad de formularios POST: " + analizadorHtml.contar_Formularios_Metodo("post"));
                     System.out
@@ -68,7 +68,7 @@ public class Main {
                         }
                         procesadorFormularios.procesarFormulario(formulario, url);
                         System.out
-                                .println("Formulario procesado con método " + formulario.attr("method").toUpperCase());
+                                .println("Formulario procesado con metodo " + formulario.attr("method").toUpperCase());
                     }
 
                 } else {
@@ -77,7 +77,7 @@ public class Main {
 
                 System.out.print("¿Deseas consultar otra URL? (si/no): ");
                 if (!scanner.hasNextLine()) {
-                    System.out.println("No se encontró una línea de entrada.");
+                    System.out.println("No se encontro una linea de entrada.");
                     break;
                 }
                 String opcion = scanner.nextLine();
@@ -87,7 +87,7 @@ public class Main {
                 System.out.println("Error: " + e.getMessage());
                 System.out.print("¿Deseas intentar con otra URL? (si/no): ");
                 if (!scanner.hasNextLine()) {
-                    System.out.println("No se encontró una línea de entrada.");
+                    System.out.println("No se encontro una linea de entrada.");
                     break;
                 }
                 String opcion = scanner.nextLine();
