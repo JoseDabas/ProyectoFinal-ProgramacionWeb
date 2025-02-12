@@ -1,7 +1,7 @@
 Practica 2 - Creacion de Blog en Sesion
 Grupo: 
 Jose Ariel Martinez Dabas - 10144270
-Hiroshy Luna - 
+Hiroshy Luna - 1014-5127
 
 Objetivo:
 
