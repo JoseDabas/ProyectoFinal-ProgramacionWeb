@@ -136,10 +136,15 @@
           <section class="card p-3">
             <h3 class="card-title">Artículos</h3>
             <article th:each="articulo : ${articulos}" class="card p-3">
-              <h3 class="card-title" th:text="${articulo.titulo}"></h3>
+              <div class = "d-flex justify-content-between align-center">
+                <h3 class="card-title" th:text="${articulo.titulo}"></h3>
+                <small class="text-muted" th:text="${#dates.format(articulo.fecha, 'dd/MM/yyyy HH:mm')}">
+
+                </small>
+              </div>
               <p
                 th:text="${#strings.length(articulo.cuerpo) > 70} ? ${#strings.substring(articulo.cuerpo, 0, 70)}+'...' : ${articulo.cuerpo}"
-              ></p>
+              </p>
               <a
                 th:href="@{/articulo/detalle/{id}(id=${articulo.id})}"
                 class="btn btn-primary"

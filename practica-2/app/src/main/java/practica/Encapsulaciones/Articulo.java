@@ -18,7 +18,7 @@ public class Articulo {
         this.titulo = titulo;
         this.cuerpo = cuerpo;
         this.autor = autor;
-        this.fecha = fecha;
+        this.fecha = new Date();
         this.listaComentarios = new ArrayList<>();
         this.listaEtiquetas = listaEtiquetas;
     }
