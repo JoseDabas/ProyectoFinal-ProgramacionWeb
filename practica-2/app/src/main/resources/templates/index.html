@@ -82,9 +82,15 @@
       .btn-primary:hover {
         background-color: #555555;
       }
-      .btn-primary:focus {
-        outline: none;
+
+      .btn-primary:focus,
+      .btn-primary:active {
+        background-color: #d3d3d3;
+        color: #333;
+        box-shadow: none;
+        border: none;
       }
+
       .card-footer {
         background-color: #f8f9fa;
         padding: 15px;
@@ -136,18 +142,19 @@
           <section class="card p-3">
             <h3 class="card-title">Artículos</h3>
             <article th:each="articulo : ${articulos}" class="card p-3">
-              <div class = "d-flex justify-content-between align-center">
-                <h3 class="card-title" th:text="${articulo.titulo}"></h3>
-                <small class="text-muted" th:text="${#dates.format(articulo.fecha, 'dd/MM/yyyy HH:mm')}">
-
-                </small>
+              <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0" th:text="${articulo.titulo}"></h3>
+                <small
+                  class="text-muted"
+                  th:text="${#dates.format(articulo.fecha, 'dd/MM/yyyy HH:mm')}"
+                ></small>
               </div>
               <p
                 th:text="${#strings.length(articulo.cuerpo) > 70} ? ${#strings.substring(articulo.cuerpo, 0, 70)}+'...' : ${articulo.cuerpo}"
-              </p>
+              ></p>
               <a
                 th:href="@{/articulo/detalle/{id}(id=${articulo.id})}"
-                class="btn btn-primary"
+                class="btn btn-primary mt-2"
                 >Leer más</a
               >
               <div class="card-footer">
