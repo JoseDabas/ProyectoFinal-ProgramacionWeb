@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${titulo}">Editar Articulo</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f4f4f4;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group label {
+        font-weight: bold;
+      }
+
+      .row {
+        margin-top: 20px;
+      }
+
+      .btn-primary {
+        background-color: #333333 !important;
+        border: none !important;
+        font-size: 1rem;
+      }
+
+      .btn-primary:hover {
+        background-color: #555555 !important;
+        color: white !important;
+      }
+
+      .btn-danger {
+        background-color: #dc3545 !important;
+        color: white;
+        font-size: 1rem;
+      }
+
+      .btn-danger:hover {
+        background-color: #c82333;
+      }
+
+      .row .col-8 {
+        padding-right: 5px;
+      }
+
+      .row .col-4 {
+        padding-left: 5px;
+      }
+
+      .btn-primary:hover,
+      .btn-primary:focus,
+      .btn-primary:active {
+        background-color: #555555 !important;
+        box-shadow: none !important;
+        border: none !important;
+        color: white !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <form action="/articulo/editar" method="post">
+        <input type="hidden" name="id" th:value="${articulo.id}" />
+        <div class="form-group">
+          <h3 class="text-center"><b>Editar Articulo</b></h3>
+          <label for="titulo">Titulo:</label>
+          <input
+            type="text"
+            id="titulo"
+            name="titulo"
+            th:value="${articulo.titulo}"
+            class="form-control"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="cuerpo">Cuerpo:</label>
+          <textarea
+            id="cuerpo"
+            name="cuerpo"
+            class="form-control"
+            required
+            th:text="${articulo.cuerpo}"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="etiquetasExistentes">Etiquetas existentes</label>
+          <select
+            multiple
+            class="form-control"
+            id="etiquetasExistentes"
+            name="etiquetasExistentes"
+          >
+            <option
+              th:each="etiqueta : ${etiquetas}"
+              th:value="${etiqueta.id}"
+              th:text="${etiqueta.etiqueta}"
+            ></option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="nuevasEtiquetas">Nuevas etiquetas</label>
+          <input
+            type="text"
+            class="form-control"
+            id="nuevasEtiquetas"
+            name="nuevasEtiquetas"
+          />
+        </div>
+        <div class="row">
+          <div class="col-8">
+            <button type="submit" class="btn btn-primary btn-block">
+              Guardar
+            </button>
+          </div>
+          <div class="col-4">
+            <a href="/">
+              <button type="button" class="btn btn-block btn-danger">
+                Cancelar
+              </button>
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

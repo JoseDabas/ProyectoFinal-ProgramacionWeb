@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${titulo}">AutoBlog</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f0f2f5;
+        color: #333;
+      }
+      header,
+      footer {
+        background-color: #ffffff;
+        color: #343a40;
+        text-align: center;
+        padding: 15px 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        font-family: "Poppins", sans-serif;
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin: 0;
+      }
+      .nav-buttons .btn {
+        margin: 8px;
+        border-radius: 5px;
+        padding: 8px 16px;
+        font-size: 1rem;
+      }
+      .nav-buttons .btn-light {
+        background-color: #ffffff;
+        color: #343a40;
+        border: 1px solid #ddd;
+      }
+      .nav-buttons .btn-light:hover {
+        background-color: #f8f9fa;
+      }
+      .nav-buttons .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+      }
+      .nav-buttons .btn-danger:hover {
+        background-color: #c82333;
+      }
+      .container {
+        max-width: 1100px;
+        padding: 40px 15px;
+      }
+      .card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #343a40;
+      }
+      .card-body {
+        color: #6c757d;
+        font-size: 1rem;
+      }
+      .btn-primary {
+        background-color: #343a40;
+        border: none;
+      }
+      .btn-primary:hover {
+        background-color: #555555;
+      }
+      .btn-primary:focus {
+        outline: none;
+      }
+      .card-footer {
+        background-color: #f8f9fa;
+        padding: 15px;
+        text-align: right;
+        font-size: 0.9rem;
+      }
+      .card-footer small {
+        color: #6c757d;
+      }
+    </style>
+  </head>
+  <body>
+    <header
+      class="d-flex justify-content-between align-items-center px-4 py-3 shadow bg-white"
+    >
+      <h1 class="m-0">AutoBlog</h1>
+      <nav>
+        <ul class="nav-buttons d-flex list-unstyled m-0">
+          <li th:unless="${session.username}">
+            <a href="/user/login" class="btn btn-light mx-1">Iniciar Sesión</a>
+          </li>
+          <li th:unless="${session.username}">
+            <a href="/user/register" class="btn btn-light mx-1">Registrar</a>
+          </li>
+          <li th:if="${session.username}">
+            <a href="/articulo/crear" class="btn btn-light mx-1"
+              >Crear Artículo</a
+            >
+          </li>
+          <li th:if="${session.username}">
+            <a href="/articulo/editar/lista" class="btn btn-light mx-1"
+              >Editar Articulo</a
+            >
+          </li>
+          <li
+            th:if="${session.username != null and session.username.administrator}"
+          >
+            <a href="/user/list" class="btn btn-light mx-1">Usuarios</a>
+          </li>
+          <li th:if="${session.username}">
+            <a href="/user/close" class="btn btn-danger mx-1">Cerrar Sesión</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main class="container mt-4">
+      <div class="row">
+        <div class="col-md-8">
+          <section class="card p-3">
+            <h3 class="card-title">Artículos</h3>
+            <article th:each="articulo : ${articulos}" class="card p-3">
+              <h3 class="card-title" th:text="${articulo.titulo}"></h3>
+              <p
+                th:text="${#strings.length(articulo.cuerpo) > 70} ? ${#strings.substring(articulo.cuerpo, 0, 70)}+'...' : ${articulo.cuerpo}"
+              ></p>
+              <a
+                th:href="@{/articulo/detalle/{id}(id=${articulo.id})}"
+                class="btn btn-primary"
+                >Leer más</a
+              >
+              <div class="card-footer">
+                <small
+                  th:each="etiqueta, iterStat : ${articulo.listaEtiquetas}"
+                  th:text="${etiqueta.etiqueta + (iterStat.last ? '' : ', ')}"
+                ></small>
+              </div>
+            </article>
+          </section>
+        </div>
+        <div class="col-md-4">
+          <section class="card p-3">
+            <h3 class="card-title">Etiquetas</h3>
+            <ul class="list-unstyled" th:each="etiqueta : ${etiquetas}">
+              <li th:text="${etiqueta.etiqueta}"></li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

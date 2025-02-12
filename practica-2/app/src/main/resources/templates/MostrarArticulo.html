@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${articulo.titulo}">Mostrar Articulo</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .container {
+        margin-top: 50px;
+      }
+      .card-header {
+        background-color: #ffffff;
+        color: #333333;
+      }
+      .btn-primary {
+        background-color: #333333;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      .btn-primary:hover {
+        background-color: #555555;
+      }
+      .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        border-radius: 8px;
+      }
+      .btn-danger:hover {
+        background-color: #c82333;
+      }
+      .row .col-8 {
+        padding-right: 5px;
+      }
+      .row .col-4 {
+        padding-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h3><b>Articulo</b></h3>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title" th:text="${articulo.titulo}"></h3>
+            </div>
+            <div class="card-body">
+              <p th:text="${articulo.cuerpo}"></p>
+            </div>
+            <div class="card-footer">
+              <small
+                th:each="etiqueta : ${articulo.listaEtiquetas}"
+                th:text="${etiqueta.etiqueta}"
+              ></small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h3><b>Comentarios<b></h3>
+          <div class="card">
+            <div class="card-body">
+              <div th:if="${#lists.size(articulo.listaComentarios) > 0}">
+                <div th:each="comentario : ${articulo.listaComentarios}">
+                  <p th:text="${comentario.comentario}"></p>
+                  <b
+                    ><small
+                      th:if="${comentario.autor != null}"
+                      th:text="${comentario.autor.username}"
+                    ></small
+                  ></b>
+                </div>
+              </div>
+
+              <div th:if="${#lists.size(articulo.listaComentarios) == 0}">
+                <p>No hay comentarios</p>
+              </div>
+
+              <form action="/articulo/comentar" method="post">
+                <input type="hidden" th:value="${articulo.id}" name="id" />
+                <div class="form-group">
+                  <label for="comentario">Agregar comentario</label>
+                  <textarea
+                    class="form-control"
+                    id="comentario"
+                    name="comentario"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+                <div class="row">
+                  <div class="col-8">
+                    <button
+                      type="submit"
+                      class="btn btn-block btn-primary"
+                      th:if="${session.username}"
+                    >
+                      Comentar
+                    </button>
+                  </div>
+                  <div class="col-4">
+                    <a href="/">
+                      <button type="button" class="btn btn-block btn-danger">
+                        Cancelar
+                      </button>
+                    </a>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="card-footer">
+              <form action="/articulo/borrar" method="post">
+                <input type="hidden" th:value="${articulo.id}" name="id" />
+                <button
+                  type="submit"
+                  class="btn btn-block btn-danger"
+                  th:if="${session.username.administrator}"
+                >
+                  Borrar Articulo
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
