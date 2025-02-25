@@ -1,5 +1,9 @@
 Blog con Javalin, JPA, Hibernate y CockroachDB
 
+Grupo: 
+Jose Ariel Martinez Dabas - 10144270
+Hiroshy Luna - 1014-5127
+
 Este proyecto es una aplicación web para la gestión de un blog, desarrollada con la librería Javalin e implementando los conceptos del protocolo HTTP, sesiones, cookies, ORM con JPA y persistencia en bases de datos en la nube con JDBC.
 
 -Funcionalidades Implementadas
