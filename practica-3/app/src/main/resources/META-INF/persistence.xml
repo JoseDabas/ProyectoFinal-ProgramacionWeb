@@ -1,0 +1,28 @@
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+    <persistence-unit name="MiUnidadPersistencia" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>practica.Entidades.Articulo</class>
+        <class>practica.Entidades.Usuario</class>
+        <class>practica.Entidades.Comentario</class>
+        <class>practica.Entidades.Etiqueta</class>
+        <class>practica.Entidades.Foto</class>
+        <properties>
+            <!--<property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:test" />-->
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/practica3"/>
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver" />
+            <property name="jakarta.persistence.jdbc.user" value="sa" />
+            <property name="jakarta.persistence.jdbc.password" value="" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <!--<property name="hibernate.hbm2ddl.auto" value="create" />-->
+            <property name="hibernate.show_sql" value="true"/>
+            <!-- Indica como será la generación de las tablas en el motor-->
+            <!-- ver la documentación: https://docs.oracle.com/javaee/7/tutorial/persistence-intro005.htm -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="update"/>
+
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+
+
+        </properties>
+    </persistence-unit>
+</persistence>
