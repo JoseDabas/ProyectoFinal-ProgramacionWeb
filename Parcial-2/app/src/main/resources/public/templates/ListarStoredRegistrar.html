@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registros de la Encuesta</title>
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <script src="../js/indexedDB.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+      /* Paleta minimalista: gris claro, blanco y texto negro */
+      :root {
+        --light-gray: #f5f5f5;
+        --gray: #e0e0e0;
+        --dark-gray: #757575;
+        --black: #212121;
+        --white: #ffffff;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--white);
+        color: var(--black);
+        padding-bottom: 30px;
+      }
+
+      .navbar {
+        background-color: var(--light-gray) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .navbar-brand {
+        font-size: 20px;
+        color: var(--black) !important;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+
+      .navbar-toggler {
+        border-color: var(--gray);
+      }
+
+      .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(33, 33, 33, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+      }
+
+      .container {
+        margin-top: 30px;
+        animation: fadeIn 0.8s ease forwards;
+      }
+
+      .page-title {
+        text-align: center;
+        font-size: 32px;
+        font-weight: 600;
+        margin-bottom: 30px;
+        letter-spacing: -0.5px;
+        color: var(--black);
+      }
+
+      .card {
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 30px;
+        border: none;
+      }
+
+      .card-header {
+        background-color: var(--light-gray);
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--gray);
+      }
+
+      .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--black);
+        font-size: 18px;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .table-responsive {
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table th {
+        background-color: var(--light-gray);
+        color: var(--black);
+        font-weight: 600;
+        border-top: none;
+        padding: 15px 20px;
+      }
+
+      .table td {
+        padding: 15px 20px;
+        vertical-align: middle;
+        color: var(--black);
+        border-color: var(--gray);
+      }
+
+      .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+
+      .table tr:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+
+      .btn {
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        margin-right: 10px;
+      }
+
+      .btn i {
+        margin-right: 8px;
+      }
+
+      .btn-primary {
+        background-color: var(--gray);
+        color: var(--black);
+        border: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--dark-gray);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-danger {
+        background-color: #f5f5f5;
+        color: #757575;
+        border: 1px solid #e0e0e0;
+      }
+
+      .btn-danger:hover {
+        background-color: #e0e0e0;
+        color: var(--black);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-secondary {
+        background-color: var(--white);
+        color: var(--black);
+        border: 1px solid var(--gray);
+      }
+
+      .btn-secondary:hover {
+        background-color: var(--light-gray);
+      }
+
+      /* Modal styling */
+      .modal-content {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+      }
+
+      .modal-header {
+        background-color: var(--light-gray);
+        color: var(--black);
+        border-bottom: 1px solid var(--gray);
+        padding: 15px 20px;
+      }
+
+      .modal-title {
+        font-weight: 600;
+      }
+
+      .modal-body {
+        padding: 20px;
+      }
+
+      .modal-footer {
+        border-top: 1px solid var(--gray);
+        padding: 15px 20px;
+      }
+
+      .form-control {
+        border: 1px solid var(--gray);
+        border-radius: 8px;
+        padding: 12px 15px;
+        height: auto;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus {
+        border-color: var(--dark-gray);
+        box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.05);
+      }
+
+      .form-group label {
+        font-weight: 500;
+        margin-bottom: 8px;
+        color: var(--black);
+      }
+
+      /* Animación de entrada */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Ajustes responsivos - mantener los mismos breakpoints */
+      @media only screen and (min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2) {
+        .iphone-text {
+          font-size: 14px;
+        }
+        .navbar {
+          font-size: 14px;
+          padding: 10px;
+          height: auto;
+        }
+        .navbar-brand {
+          font-size: 24px;
+        }
+        .btn {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+      <a class="navbar-brand" href="/"
+        ><i class="fas fa-home mr-2"></i>Volver al inicio</a
+      >
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+
+    <div class="container">
+      <h2 class="page-title">
+        <i class="fas fa-clipboard-list mr-2"></i>Registros de la Encuesta
+      </h2>
+
+      <div class="card">
+        <div class="card-header">
+          <h5><i class="fas fa-table mr-2"></i>Listado de Registros</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped" id="recordsTable">
+              <thead>
+                <tr>
+                  <th class="iphone-text">
+                    <i class="fas fa-user mr-1"></i>Nombre
+                  </th>
+                  <th class="iphone-text">
+                    <i class="fas fa-map-marker-alt mr-1"></i>Sector
+                  </th>
+                  <th class="iphone-text">
+                    <i class="fas fa-graduation-cap mr-1"></i>Nivel Escolar
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Los registros de la IndexedDB se insertarán aquí -->
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <button class="btn btn-primary" id="syncButton">
+              <i class="fas fa-sync-alt"></i>Sincronizar con el servidor
+            </button>
+            <a href="/">
+              <button class="btn btn-danger">
+                <i class="fas fa-arrow-left"></i>Volver al inicio
+              </button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="editModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit mr-2"></i>Editar Registro
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="editForm">
+              <input type="hidden" id="editId" />
+              <div class="form-group">
+                <label for="editNombre"
+                  ><i class="fas fa-user mr-1"></i>Nombre</label
+                >
+                <input type="text" class="form-control" id="editNombre" />
+              </div>
+              <div class="form-group">
+                <label for="editSector"
+                  ><i class="fas fa-map-marker-alt mr-1"></i>Sector</label
+                >
+                <input type="text" class="form-control" id="editSector" />
+              </div>
+              <div class="form-group">
+                <label for="editNivelEscolar"
+                  ><i class="fas fa-graduation-cap mr-1"></i>Nivel
+                  Escolar:</label
+                >
+                <select
+                  class="form-control"
+                  id="editNivelEscolar"
+                  name="editNivelEscolar"
+                  required
+                >
+                  <option value="">Seleccione su nivel escolar</option>
+                  <option value="Básico">Básico</option>
+                  <option value="Medio">Medio</option>
+                  <option value="Grado Universitario">
+                    Grado Universitario
+                  </option>
+                  <option value="Postgrado">Postgrado</option>
+                  <option value="Doctorado">Doctorado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editUsuario"
+                  ><i class="fas fa-id-badge mr-1"></i>Usuario</label
+                >
+                <input type="text" class="form-control" id="editUsuario" />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="saveButton">
+              <i class="fas fa-save mr-1"></i>Guardar
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              <i class="fas fa-times mr-1"></i>Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="deleteModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-trash-alt mr-2"></i>Confirmar Borrado
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro de que quieres borrar este registro?</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-danger"
+              id="confirmDeleteButton"
+            >
+              <i class="fas fa-trash-alt mr-1"></i>Borrar
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              <i class="fas fa-times mr-1"></i>Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/storedRegister.js"></script>
+    <script>
+      // Llama a la función para mostrar los registros cuando la página se carga
+      window.onload = displayRecords;
+      // Llama a la función para sincronizar los registros con el servidor cuando se presiona el botón
+    </script>
+  </body>
+</html>

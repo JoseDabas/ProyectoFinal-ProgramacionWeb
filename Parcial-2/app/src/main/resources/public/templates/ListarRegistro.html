@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registros de la Encuesta</title>
+    <!-- Bootstrap y otros estilos -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css"
+    />
+    <style>
+      /* Paleta minimalista: gris claro, blanco y texto negro */
+      :root {
+        --light-gray: #f5f5f5;
+        --gray: #e0e0e0;
+        --dark-gray: #757575;
+        --black: #212121;
+        --white: #ffffff;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--white);
+        color: var(--black);
+        padding-bottom: 30px;
+      }
+
+      .navbar {
+        background-color: var(--light-gray) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .navbar-brand {
+        font-size: 20px;
+        color: var(--black) !important;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+        animation: fadeIn 0.8s ease forwards;
+      }
+
+      .page-title {
+        text-align: center;
+        font-size: 32px;
+        font-weight: 600;
+        margin-bottom: 30px;
+        letter-spacing: -0.5px;
+        color: var(--black);
+      }
+
+      .card {
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 30px;
+        border: none;
+      }
+
+      .card-header {
+        background-color: var(--light-gray);
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--gray);
+      }
+
+      .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--black);
+        font-size: 18px;
+      }
+
+      .table-responsive {
+        overflow: auto;
+        max-height: 500px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid var(--gray);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table th {
+        background-color: var(--light-gray);
+        color: var(--black);
+        font-weight: 600;
+        border-top: none;
+        padding: 15px 20px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .table td {
+        padding: 15px 20px;
+        vertical-align: middle;
+        color: var(--black);
+        border-color: var(--gray);
+      }
+
+      .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+
+      .table tr:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+
+      /* Estilos para el enlace del mapa */
+      .mapLink {
+        display: inline-flex;
+        align-items: center;
+        color: var(--black);
+        background-color: var(--gray);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .mapLink:hover {
+        background-color: var(--dark-gray);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-decoration: none;
+      }
+
+      .mapLink i {
+        margin-right: 5px;
+      }
+
+      /* Mapa */
+      .map-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        margin-top: 20px;
+        margin-bottom: 30px;
+      }
+
+      #map-canvas {
+        height: 400px;
+        width: 100%;
+        border-radius: 12px;
+      }
+
+      /* Animación de entrada */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive */
+      @media only screen and (min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2) {
+        .navbar {
+          font-size: 14px;
+          padding: 10px;
+          height: auto;
+        }
+
+        .navbar-brand {
+          font-size: 18px;
+        }
+
+        .iphone-text {
+          font-size: 14px;
+        }
+
+        #map-canvas {
+          height: 250px;
+        }
+
+        .table th,
+        .table td {
+          padding: 10px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        #map-canvas {
+          height: 250px;
+        }
+
+        .page-title {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-home mr-2"></i>Volver al inicio
+        </a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h2 class="page-title">
+        <i class="fas fa-clipboard-list mr-2"></i>Registros de la Encuesta
+      </h2>
+
+      <div class="card">
+        <div class="card-header">
+          <h5><i class="fas fa-table mr-2"></i>Listado de Registros</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped" id="recordsTable">
+              <thead>
+                <tr>
+                  <th><i class="fas fa-hashtag mr-1"></i>ID</th>
+                  <th><i class="fas fa-user mr-1"></i>Nombre</th>
+                  <th><i class="fas fa-map-marker-alt mr-1"></i>Sector</th>
+                  <th>
+                    <i class="fas fa-graduation-cap mr-1"></i>Nivel Escolar
+                  </th>
+                  <th><i class="fas fa-map mr-1"></i>Ubicación</th>
+                </tr>
+              </thead>
+              <tbody id="registrosTable">
+                <article th:each="registro : ${registros}">
+                  <tr>
+                    <td
+                      id="id"
+                      class="iphone-text"
+                      th:text="${registro.id}"
+                    ></td>
+                    <td
+                      class="iphone-text"
+                      th:text="${registro.formulario.nombre}"
+                    ></td>
+                    <td
+                      class="iphone-text"
+                      th:text="${registro.formulario.sector}"
+                    ></td>
+                    <td
+                      class="iphone-text"
+                      th:text="${registro.formulario.nivelEscolar}"
+                    ></td>
+                    <td>
+                      <a
+                        href="#"
+                        class="mapLink"
+                        th:data-latitud="${registro.formulario.latitud}"
+                        th:data-longitud="${registro.formulario.longitud}"
+                      >
+                        <i class="fas fa-map-pin"></i>Ver en mapa
+                      </a>
+                    </td>
+                  </tr>
+                </article>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-container">
+        <div id="map-canvas"></div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../js/indexedDB.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      // En tu archivo JavaScript o JSX
+      $(document).ready(function () {
+        const mymap = L.map("map-canvas");
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 50,
+        }).addTo(mymap);
+
+        $(".mapLink").click(function () {
+          let latitud = $(this).data("latitud");
+          let longitud = $(this).data("longitud");
+
+          if (!isNaN(latitud) && !isNaN(longitud)) {
+            latitud = parseFloat(latitud);
+            longitud = parseFloat(longitud);
+
+            mymap.setView([latitud, longitud], 13);
+            L.marker([latitud, longitud])
+              .addTo(mymap)
+              .bindPopup("Ubicación")
+              .openPopup();
+          } else {
+            console.error("Latitud y longitud no son números válidos");
+          }
+        });
+      });
+      window.onload = function () {
+        let rows = document.querySelectorAll("article tr");
+        for (let i = 0; i < rows.length; i++) {
+          if (i % 2 === 0) {
+            rows[i].style.backgroundColor = "#a1a0a0"; // color for even rows
+          } else {
+            rows[i].style.backgroundColor = "#e0e0e0"; // color for odd rows
+          }
+        }
+      };
+    </script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  </body>
+</html>

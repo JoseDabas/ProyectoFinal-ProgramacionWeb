@@ -65,7 +65,7 @@ public class CrudTradicionalControlador extends BaseControlador {
                     Estudiante estudiante = estudianteServices
                             .getEstudiantePorMatricula(ctx.pathParamAsClass("matricula", Integer.class).get());
                     Map<String, Object> modelo = new HashMap<>();
-                    modelo.put("titulo", "Formulario Visaulizar Estudiante " + estudiante.getMatricula());
+                    modelo.put("titulo", "Formulario Visauliszar Estudiante " + estudiante.getMatricula());
                     modelo.put("estudiante", estudiante);
                     modelo.put("visualizar", true);
                     modelo.put("accion", "/crud-simple/");

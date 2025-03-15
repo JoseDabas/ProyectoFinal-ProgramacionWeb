@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${titulo}">Crear Usuario</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Paleta minimalista: gris claro, blanco y texto negro */
+      :root {
+        --light-gray: #f5f5f5;
+        --gray: #e0e0e0;
+        --dark-gray: #757575;
+        --black: #212121;
+        --white: #ffffff;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--white);
+        color: var(--black);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .titulo {
+        text-align: center;
+        font-size: 36px;
+        font-weight: 600;
+        margin-bottom: 30px;
+        letter-spacing: -0.5px;
+        animation: fadeIn 0.6s ease forwards;
+      }
+
+      .create-container {
+        max-width: 450px;
+        width: 100%;
+        animation: fadeIn 0.8s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+      }
+
+      .create-box {
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+
+      .card-header {
+        background-color: var(--light-gray);
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid var(--gray);
+      }
+
+      .card-header a {
+        color: var(--black);
+        font-size: 24px;
+        font-weight: 600;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+
+      .card-body {
+        padding: 30px;
+      }
+
+      .login-box-msg {
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 500;
+      }
+
+      .text-danger {
+        color: #e53935 !important;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .form-control {
+        border: 1px solid var(--gray);
+        border-radius: 8px;
+        padding: 12px 15px;
+        height: auto;
+        transition: all 0.3s ease;
+        padding-right: 40px; /* Espacio para el icono */
+      }
+
+      .form-control:focus {
+        border-color: var(--dark-gray);
+        box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.05);
+      }
+
+      /* Iconos dentro de los campos */
+      .input-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--dark-gray);
+        z-index: 10;
+      }
+
+      /* Estilo para el checkbox */
+      .checkbox-container {
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .custom-checkbox {
+        margin-right: 10px;
+        position: relative;
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        outline: none;
+        border: 2px solid var(--gray);
+        border-radius: 4px;
+        background-color: var(--white);
+        transition: all 0.2s ease;
+      }
+
+      .custom-checkbox:checked {
+        background-color: var(--dark-gray);
+        border-color: var(--dark-gray);
+      }
+
+      .custom-checkbox:checked::after {
+        content: "✓";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        color: var(--white);
+        font-size: 14px;
+        text-align: center;
+        line-height: 18px;
+      }
+
+      .checkbox-label {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--black);
+        cursor: pointer;
+      }
+
+      .btn {
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        height: 50px; /* Altura fija para ambos botones */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+
+      .btn-primary {
+        background-color: var(--gray);
+        color: var(--black);
+        border: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--dark-gray);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-danger {
+        background-color: #f5f5f5;
+        color: #757575;
+        border: 1px solid #e0e0e0;
+      }
+
+      .btn-danger:hover {
+        background-color: #e0e0e0;
+        color: var(--black);
+        border-color: #d0d0d0;
+      }
+
+      /* Aseguramos que los botones tengan el mismo ancho */
+      .button-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .button-container .btn {
+        flex: 1;
+      }
+
+      /* Animación de entrada */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Ajustes responsivos */
+      @media (max-width: 576px) {
+        .titulo {
+          font-size: 28px;
+        }
+        .create-container {
+          width: 95%;
+        }
+        .login-box-msg {
+          font-size: 16px;
+        }
+        .card-header a {
+          font-size: 20px;
+        }
+        .btn {
+          padding: 10px 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h2 class="titulo"><i class="fas fa-user-edit mr-2"></i>Crear Usuario</h2>
+
+    <div class="create-container">
+      <div class="create-box">
+        <div class="card-header">
+          <a href="/"> <i class="fas fa-home mr-2"></i><b>Inicio</b> </a>
+        </div>
+
+        <div class="card-body">
+          <p class="login-box-msg">Editar este usuario</p>
+
+          <p
+            class="login-box-msg text-danger"
+            th:if="${error}"
+            th:text="${error}"
+          ></p>
+
+          <form action="/user/crear" method="post">
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Usuario"
+                name="usuario"
+                required
+              />
+              <i class="fas fa-user input-icon"></i>
+            </div>
+
+            <div class="input-group">
+              <input
+                type="password"
+                class="form-control"
+                placeholder="Contraseña"
+                name="password"
+                required
+              />
+              <i class="fas fa-lock input-icon"></i>
+            </div>
+
+            <div class="checkbox-container">
+              <input
+                type="checkbox"
+                id="admin"
+                name="Admin"
+                class="custom-checkbox"
+              />
+              <label for="admin" class="checkbox-label">Administrador</label>
+            </div>
+
+            <div class="button-container">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save mr-2"></i>Crear
+              </button>
+              <a href="/user/list" class="btn btn-danger">
+                <i class="fas fa-times mr-2"></i>Cancelar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Garantizar que el contenedor sea visible
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+          document.querySelector(".create-container").style.opacity = "1";
+        }, 200);
+      });
+    </script>
+  </body>
+</html>
