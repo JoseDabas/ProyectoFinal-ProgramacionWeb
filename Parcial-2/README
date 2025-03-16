@@ -4,7 +4,7 @@ Link del video:
 
 Script y comandos para AWS:
 
-wget https://raw.githubusercontent.com/JoseDabas/virtualhost-parcial2/refs/heads/main/basico-ubuntu.sh/master/basico-ubuntu.sh && chmod +x basico-ubuntu.sh && bash basico-ubuntu.sh
+wget https://raw.githubusercontent.com/JoseDabas/virtualhost-parcial2/refs/heads/main/basico-ubuntu.sh && chmod +x basico-ubuntu.sh && bash basico-ubuntu.sh
 
 cd /etc/apache2/sites-available/
 
