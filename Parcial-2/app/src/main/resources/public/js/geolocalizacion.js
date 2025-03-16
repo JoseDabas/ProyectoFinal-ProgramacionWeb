@@ -23,6 +23,7 @@ window.onload = function() {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function setCoordinates() {
     // Store the coordinates in the form's hidden input fields
     document.getElementById('latitud').value = lat;

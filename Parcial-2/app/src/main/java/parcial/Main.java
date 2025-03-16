@@ -26,7 +26,7 @@ public class Main {
                 staticFileConfig.precompress = false;
                 staticFileConfig.aliasCheck = null;
             });
-        }).start(7000);
+        }).start("0.0.0.0", 7000);
 
         new HomeController(app).aplicarRutas();
         new UserController(app).aplicarRutas();

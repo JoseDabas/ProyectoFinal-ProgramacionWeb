@@ -58,6 +58,11 @@ java {
     }
 }
 
+java{
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+
 application {
     // Define the main class for the application.
     mainClass = 'parcial.Main'
