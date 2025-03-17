@@ -306,7 +306,7 @@
                       </button>
                     </a>
                     <form
-                      action="@{'/user/borrar/' + ${usuario.username}}"
+                      th:action="@{'/user/borrar/' + ${usuario.username}}"
                       method="post"
                       style="margin: 0"
                     >

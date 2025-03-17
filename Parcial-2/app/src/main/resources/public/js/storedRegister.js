@@ -160,7 +160,7 @@ async function syncWithServer() {
 }
 
 function conectar(records) {
-    webSocket = new WebSocket("wss://" + location.hostname + ":" + location.port + "/encuesta/sincronizar");
+    webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/encuesta/sincronizar");
     webSocket.onopen = function() {
         webSocket.send(JSON.stringify(records));
         deleteAllRecords();

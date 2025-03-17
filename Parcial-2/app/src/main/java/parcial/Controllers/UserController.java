@@ -38,7 +38,7 @@ public class UserController extends BaseController {
 
             Usuario existingUser = UserServices.getInstancia().findUserByUsername(user);
             if (existingUser != null) {
-                ctx.render("/templates/Registrar.html", Map.of("error", "El nombre de usuario ya existe"));
+                ctx.render("/public/templates/Registrar.html", Map.of("error", "El nombre de usuario ya existe"));
             } else {
                 Usuario temp = new Usuario(user, pass, false);
                 UserServices.getInstancia().insert(temp);
@@ -60,7 +60,7 @@ public class UserController extends BaseController {
 
             Usuario existingUser = UserServices.getInstancia().findUserByUsername(usuario);
             if (existingUser != null) {
-                ctx.render("/templates/Registrar.html", Map.of("error", "El nombre de usuario ya existe"));
+                ctx.render("/public/templates/Registrar.html", Map.of("error", "El nombre de usuario ya existe"));
             } else {
                 Usuario temp = new Usuario(usuario, password, admin);
                 UserServices.getInstancia().insert(temp);
@@ -168,7 +168,7 @@ public class UserController extends BaseController {
             ctx.render("/public/templates/EditarUsuario.html", model);
         });
 
-        app.post("user/editar/{username}", ctx -> {
+        app.post("/user/editar/{username}", ctx -> {
             Usuario user = UserServices.getInstancia().find(ctx.pathParam("username"));
             if (user == null) {
                 ctx.redirect("/");
@@ -194,11 +194,13 @@ public class UserController extends BaseController {
         });
 
         app.post("/user/borrar/{username}", ctx -> {
+            String username = ctx.pathParam("username");
+
             Usuario user = UserServices.getInstancia().find(ctx.pathParam("username"));
             if (user == null) {
                 ctx.redirect("/");
             }
-            UserServices.getInstancia().delete(user);
+            UserServices.getInstancia().delete(username);
             ctx.redirect("/user/list");
         });
     }
