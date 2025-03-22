@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Administración de Chat</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin-top: 50px;
+        }
+        .chat-container {
+            display: flex;
+            height: 70vh;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .chat-list {
+            width: 30%;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+        }
+        .chat-detail {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 15px;
+            background-color: #343a40;
+            color: white;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #ffffff;
+        }
+        .chat-input {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        .chat-session {
+            cursor: pointer;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            transition: background-color 0.3s;
+        }
+        .chat-session:hover, .chat-session.active {
+            background-color: #e9ecef;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        .message-admin {
+            justify-content: flex-end;
+        }
+        .message-visitor {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+        .message-admin .message-content {
+            background-color: #007bff;
+            color: white;
+        }
+        .message-visitor .message-content {
+            background-color: #f1f1f1;
+        }
+        .btn-primary {
+            background-color: #343a40;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #555555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mb-4">Panel de Administración de Chat</h2>
+        
+        <div class="chat-container">
+            <div class="chat-list" id="chat-sessions">
+                <div class="chat-session active" th:each="session : ${sessions}" th:data-id="${session.id}" th:onclick="loadChat(this.getAttribute('data-id'))">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" th:text="${session.visitorName}">Visitante</h5>
+                        <small class="text-muted" th:text="${#dates.format(session.lastActive, 'dd/MM/yyyy HH:mm')}">01/01/2023</small>
+                    </div>
+                    <p class="mb-0 text-truncate">Haga clic para ver la conversación</p>
+                </div>
+                
+                <div th:if="${sessions.empty}" class="p-4 text-center">
+                    <p>No hay conversaciones activas</p>
+                </div>
+            </div>
+            
+            <div class="chat-detail">
+                <div class="chat-header">
+                    <h5 id="current-chat-name">Seleccione una conversación</h5>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div class="text-center p-4">
+                        <p>Seleccione una conversación para ver los mensajes</p>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" id="message-input" class="form-control" placeholder="Escribe un mensaje..." disabled>
+                        <div class="input-group-append">
+                            <button id="send-button" class="btn btn-primary" disabled>Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+        </div>
+    </div>
+    
+    <script>
+        let currentSessionId = null;
+        let ws = null;
+        
+        // Inicializar WebSocket
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/chat`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('WebSocket conectado');
+                
+                // Registrar como administrador
+                const adminUsername = "[[${session.username != null ? session.username.username : ''}]]";
+                
+                if (adminUsername) {
+                    const registerMessage = {
+                        type: 'register',
+                        username: adminUsername,
+                        isAdmin: true
+                    };
+                    
+                    ws.send(JSON.stringify(registerMessage));
+                }
+            };
+            
+            ws.onmessage = function(event) {
+                try {
+                    const message = JSON.parse(event.data);
+                    
+                    if (message.type === 'chat' && !message.isAdmin && message.sessionId === currentSessionId) {
+                        appendMessage(message.visitorName, message.message, false);
+                    }
+                } catch (e) {
+                    console.error('Error procesando mensaje:', e);
+                }
+            };
+            
+            ws.onclose = function() {
+                console.log('WebSocket desconectado');
+                
+                // Reconectar después de un tiempo
+                setTimeout(function() {
+                    initWebSocket();
+                }, 3000);
+            };
+            
+            ws.onerror = function(error) {
+                console.error('Error de WebSocket:', error);
+            };
+        }
+        
+        function loadChat(sessionId) {
+            currentSessionId = sessionId;
+            
+            // Actualizar UI
+            document.querySelectorAll('.chat-session').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`[data-id="${sessionId}"]`).classList.add('active');
+            
+            // Habilitar input
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('send-button').disabled = false;
+            
+            // Cargar nombre de visitante
+            const visitorName = document.querySelector(`[data-id="${sessionId}"] h5`).textContent;
+            document.getElementById('current-chat-name').textContent = `Chat con ${visitorName}`;
+            
+            // Cargar mensajes
+            fetch(`/api/chat/${sessionId}`)
+                .then(response => response.json())
+                .then(messages => {
+                    const chatMessages = document.getElementById('chat-messages');
+                    chatMessages.innerHTML = '';
+                    
+                    if (messages.length === 0) {
+                        chatMessages.innerHTML = '<div class="text-center p-4"><p>No hay mensajes en esta conversación</p></div>';
+                        return;
+                    }
+                    
+                    messages.forEach(message => {
+                        appendMessage(
+                            message.esAdministrador ? 'Tú' : message.nombreVisitante,
+                            message.mensaje,
+                            message.esAdministrador
+                        );
+                    });
+                    
+                    // Scroll al final
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error cargando mensajes:', error);
+                });
+        }
+        
+        function sendMessage() {
+            if (!currentSessionId || !ws || ws.readyState !== WebSocket.OPEN) {
+                return;
+            }
+            
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                return;
+            }
+            
+            const adminUsername = "[[${session.username != null ? session.username.username : ''}]]";
+            const visitorName = document.querySelector(`[data-id="${currentSessionId}"] h5`).textContent;
+            
+            const chatMessage = {
+                type: 'chat',
+                sessionId: currentSessionId,
+                adminUsername: adminUsername,
+                visitorName: visitorName,
+                message: message,
+                isAdmin: true,
+                timestamp: new Date().toISOString()
+            };
+            
+            ws.send(JSON.stringify(chatMessage));
+            appendMessage('Tú', message, true);
+            messageInput.value = '';
+        }
+        
+        function appendMessage(sender, message, isAdmin) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isAdmin ? 'message-admin' : 'message-visitor'}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="sender font-weight-bold">${sender}</div>
+                    <div class="message-text">${message}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar WebSocket
+            initWebSocket();
+            
+            // Configurar envío de mensajes
+            document.getElementById('send-button').addEventListener('click', sendMessage);
+            document.getElementById('message-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Cargar primera conversación si hay alguna
+            const firstSession = document.querySelector('.chat-session');
+            if (firstSession) {
+                loadChat(firstSession.getAttribute('data-id'));
+            }
+        });
+    </script>
+</body>
+</html>
