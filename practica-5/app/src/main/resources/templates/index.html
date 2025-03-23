@@ -226,15 +226,15 @@
       </div>
     </main>
     <div class="pagination">
-      <a href="#" th:if="${currentPage > 1}" th:href="@{/{page}(page=${currentPage - 1})}">Atras</a>
+      <a href="#" th:if="${currentPage > 1}" th:href="@{/(page=${currentPage - 1})}">Atras</a>
       <span th:each="page : ${#numbers.sequence(1, totalPages)}">
-          <a href="#" th:href="@{/{page}(page=${page})}" th:text="${page}"></a>
+          <a href="#" th:href="@{/(page=${page})}" th:text="${page}"></a>
       </span>
-      <a href="#" th:if="${currentPage < totalPages}" th:href="@{/{page}(page=${currentPage + 1})}">Siguiente</a>
+      <a href="#" th:if="${currentPage < totalPages}" th:href="@{/(page=${currentPage + 1})}">Siguiente</a>
   </div>
 
     <!-- Script para paginación AJAX -->
-    <script src="../js/pagination.js"></script>
+    <script src="/js/pagination.js"></script>
 
     <!-- Chat Widget -->
     <div id="chat-widget" class="position-fixed" style="bottom: 20px; right: 20px; z-index: 1000; width: 350px; display: none;">
@@ -271,6 +271,8 @@
     <button id="open-chat" class="btn btn-primary position-fixed" style="bottom: 20px; right: 20px; z-index: 999;">
       <i class="fa fa-comment"></i> Chatear con nosotros
     </button>
+
+    <script src="/js/pagination.js"></script>
 
     <!-- JavaScript para el Chat -->
     <script>

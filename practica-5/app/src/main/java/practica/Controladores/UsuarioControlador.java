@@ -91,7 +91,8 @@ public class UsuarioControlador extends BaseControlador {
                 }
 
                 else {
-                    ctx.render("/templates/IniciarSesion.html", Map.of("error", "Usuario o contraseña incorrectos"));
+                    ctx.render("/templates/IniciarSesion.html",
+                            Map.of("error", "Usuario o contraseña incorrectos"));
                 }
             } else {
                 ctx.render("/templates/IniciarSesion.html", Map.of("error", "Usuario no existe"));

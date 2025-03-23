@@ -1,6 +1,7 @@
 package practica;
 
 import io.javalin.Javalin;
+import io.javalin.json.JavalinJackson;
 import practica.Controladores.ArticuloControlador;
 import practica.Controladores.InicioControlador;
 import practica.Controladores.UsuarioControlador;
@@ -10,10 +11,11 @@ import practica.Servicios.*;
 import practica.WebSocket.ChatWebSocket;
 
 import practica.Entidades.Usuario;
-//import jakarta.persistence.Persistence;
-//import jakarta.persistence.EntityManager;
-//import jakarta.persistence.EntityManagerFactory;
 import practica.Controladores.ChatControlador;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 
 public class Main {
     public static void main(String[] args) {
@@ -29,14 +31,17 @@ public class Main {
             System.out.println("El usuario 'admin' ya existe.");
         }
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Hibernate5JakartaModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
         Javalin app = Javalin.create(javalinConfig -> {
-            // Usar configuración de plugins y registros compatible con tu versión
+
+            javalinConfig.jsonMapper(new JavalinJackson(objectMapper));
             javalinConfig.plugins.enableDevLogging();
-            // Configurar CORS para WebSockets
-            javalinConfig.plugins.enableCors(cors -> {
-                cors.add(it -> it.anyHost());
-            });
-        }).start(8000);
+            javalinConfig.staticFiles.add("/public");
+
+        });
 
         // Configuración de WebSockets
         app.ws("/chat", ws -> {
@@ -50,5 +55,7 @@ public class Main {
         new InicioControlador(app).aplicarRutas();
         new ArticuloControlador(app).aplicarRutas();
         new ChatControlador(app).aplicarRutas(); // Nuevo controlador para chat
+
+        app.start(7000);
     }
 }

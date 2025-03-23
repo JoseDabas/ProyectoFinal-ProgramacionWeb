@@ -21,7 +21,7 @@ public class IniciarServices {
     public void startDb() {
         try {
             Server.createTcpServer("-tcpPort",
-                    "9092",
+                    "9093",
                     "-tcpAllowOthers",
                     "-tcpDaemon",
                     "-ifNotExists").start();

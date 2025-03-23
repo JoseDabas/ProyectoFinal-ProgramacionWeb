@@ -54,8 +54,9 @@ dependencies {
     //Gson es una biblioteca de Google que permite convertir objetos Java a su representación JSON y viceversa.
     implementation 'com.google.code.gson:gson:2.10.1'
 
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
 
-
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5-jakarta:2.15.0'
     
 }
 

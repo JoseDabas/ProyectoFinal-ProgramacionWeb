@@ -41,7 +41,51 @@ public class ArticuloControlador extends BaseControlador {
             ctx.status(204); // No Content
         });
 
-        this.app.get("/page/{page}", ctx -> {
+        this.app.get("/api/articulos", ctx -> {
+            String pageParam = ctx.queryParam("page");
+            int page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
+
+            List<Articulo> articulos = ArticuloServices.getInstance().findAllRecentPag(page, 5);
+            int totalArticulos = ArticuloServices.getInstance().findAllRecent().size();
+            int totalPages = (int) Math.ceil((double) totalArticulos / 5);
+
+            // Crear objetos simplificados para evitar serialización circular
+            List<Map<String, Object>> articulosSimplificados = new ArrayList<>();
+            for (Articulo articulo : articulos) {
+                Map<String, Object> artSimple = new HashMap<>();
+                artSimple.put("id", articulo.getId());
+                artSimple.put("titulo", articulo.getTitulo());
+                artSimple.put("cuerpo", articulo.getCuerpo());
+                artSimple.put("fecha", articulo.getFecha());
+
+                // Manejar el autor
+                Map<String, Object> autorSimple = new HashMap<>();
+                autorSimple.put("username", articulo.getAutor().getUsername());
+                autorSimple.put("nombre", articulo.getAutor().getNombre());
+                artSimple.put("autor", autorSimple);
+
+                // Manejar etiquetas
+                List<Map<String, Object>> etiquetasSimple = new ArrayList<>();
+                for (Etiqueta etiqueta : articulo.getListaEtiquetas()) {
+                    Map<String, Object> etqSimple = new HashMap<>();
+                    etqSimple.put("id", etiqueta.getId());
+                    etqSimple.put("etiqueta", etiqueta.getEtiqueta());
+                    etiquetasSimple.add(etqSimple);
+                }
+                artSimple.put("listaEtiquetas", etiquetasSimple);
+
+                articulosSimplificados.add(artSimple);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("articulos", articulosSimplificados);
+            response.put("totalPages", totalPages);
+            response.put("currentPage", page);
+
+            ctx.json(response);
+        });
+
+        this.app.get("/pagina/{page}", ctx -> {
 
             String pageParam = ctx.pathParam("page");
 
