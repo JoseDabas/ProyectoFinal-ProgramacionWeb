@@ -1,16 +1,8 @@
-# Proyecto ORM con JPA
+# Proyecto 6 - REST
 
-Proyecto para demostrar la funcionalidad de ORM con JPA,
-preparado para ser utilizado con Heroku con Postgres.
+Grupo :
+Jose Ariel Martinez
+Hiroshy Luna
 
-## Utiliza:
 
-* Javalin 6.1.3
-* Hibernate 6
-* JPA 3.X
-* OpenApi para Javalin (https://github.com/javalin/javalin-openapi)
 
-## Requiere:
-
-* Java 21
-* Gradle 8.5
