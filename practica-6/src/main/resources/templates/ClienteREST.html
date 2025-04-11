@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente REST - Estudiantes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .panel {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input[type="number"], input[type="text"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cliente REST - Gestión de Estudiantes</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>Lista de Estudiantes</h2>
+            <div id="listaEstudiantes">
+                <table id="tablaEstudiantes">
+                    <thead>
+                        <tr>
+                            <th>Matrícula</th>
+                            <th>Nombre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla">
+                        <!-- Aquí se cargarán los estudiantes -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Buscar Estudiante</h2>
+            <form id="formBuscar">
+                <label for="buscarMatricula">Matrícula:</label>
+                <input type="number" id="buscarMatricula" required>
+                <button type="submit">Buscar</button>
+            </form>
+            <div id="resultadoBusqueda" class="status"></div>
+            
+            <h2>Crear Estudiante</h2>
+            <form id="formCrear">
+                <label for="crearMatricula">Matrícula:</label>
+                <input type="number" id="crearMatricula" required>
+                <label for="crearNombre">Nombre:</label>
+                <input type="text" id="crearNombre" required>
+                <button type="submit">Crear</button>
+            </form>
+            <div id="resultadoCrear" class="status"></div>
+            
+            <h2>Eliminar Estudiante</h2>
+            <form id="formEliminar">
+                <label for="eliminarMatricula">Matrícula:</label>
+                <input type="number" id="eliminarMatricula" required>
+                <button type="submit" class="btn-danger">Eliminar</button>
+            </form>
+            <div id="resultadoEliminar" class="status"></div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/cliente-rest.js}"></script>
+
+</body>
+</html>
