@@ -69,6 +69,38 @@ public class UserController extends BaseController {
                 ctx.render("/public/templates/Login.html", Map.of("error", "Usuario no existe"));
             }
         });
+
+        app.get("/user/crear", ctx -> {
+            Usuario usuario = ctx.sessionAttribute("username");
+            if (usuario == null || !usuario.isAdmin()) {
+                ctx.redirect("/");
+                return;
+            }
+            ctx.render("/public/templates/crear-usuario.html");
+        });
+
+        app.post("/user/crear", ctx -> {
+            Usuario adminUser = ctx.sessionAttribute("username");
+            if (adminUser == null || !adminUser.isAdmin()) {
+                ctx.redirect("/");
+                return;
+            }
+
+            String username = ctx.formParam("usuario");
+            String password = ctx.formParam("password");
+            boolean isAdmin = "on".equals(ctx.formParam("admin"));
+
+            Usuario existingUser = UserServices.getInstance().findByUsername(username);
+
+            if (existingUser != null) {
+                ctx.render("/public/templates/crear-usuario.html", Map.of("error", "El nombre de usuario ya existe"));
+            } else {
+                Usuario newUser = new Usuario(new ObjectId(), username, password, isAdmin);
+                UserServices.getInstance().crear(newUser);
+                ctx.redirect("/user/list");
+            }
+        });
+
         app.post("/user/tokenJWS/{usuario}", ctx -> {
             String username = ctx.pathParam("usuario");
             Usuario user = UserServices.getInstance().findByUsername(username);

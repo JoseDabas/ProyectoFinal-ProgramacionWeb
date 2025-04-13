@@ -10,6 +10,10 @@
     <meta name="author" content="Devcrud" />
     <title>ShortURL</title>
 
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#3f80ea" />
+
     <!-- Google Fonts - Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -204,23 +208,28 @@
         overflow: hidden;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         border: none;
-        margin-bottom: 50px;
+        margin-bottom: 60px;
       }
 
       .table-bordered th {
         background-color: var(--secondary-color);
         color: white;
-        padding: 15px;
+        padding: 18px 15px;
         font-weight: 600;
         border: none;
       }
 
       .table-bordered td {
-        padding: 15px;
+        padding: 20px 15px;
         vertical-align: middle;
         border-bottom: 1px solid #f0f0f0;
         border-right: none;
         border-left: none;
+        line-height: 1.6;
+      }
+
+      .table-bordered tr {
+        min-height: 70px;
       }
 
       .table-bordered tr:hover {
@@ -325,6 +334,30 @@
         font-weight: 500;
       }
 
+      /* Estilos para indicadores offline */
+      #offlineMessage {
+        display: none;
+        margin-bottom: 15px;
+      }
+
+      .offline-badge {
+        background-color: #ffc107;
+        margin-left: 5px;
+      }
+
+      .syncing-icon {
+        animation: spin 2s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
       /* Responsive adjustments */
       @media (max-width: 768px) {
         .navbar-brand img {
@@ -387,7 +420,7 @@
     >
       <div class="container">
         <a class="navbar-brand" href="/">
-          <img src="assets/img/Logo.png" alt="Logo" class="brand-img" />
+          <img src="/assets/img/Logo.png" alt="Logo" class="brand-img" />
         </a>
         <button
           class="navbar-toggler"
@@ -422,6 +455,7 @@
             <li
               class="nav-item d-none d-sm-inline-block"
               th:if="${session.username}"
+              th:data-username="${session.username.username}"
             >
               <a href="/user/close" id="logoutButton" class="nav-link">
                 <i class="fas fa-sign-out-alt mr-1"></i> Cerrar sesión
@@ -474,7 +508,14 @@
     <!-- URLs table section -->
     <div class="container">
       <section id="urls" class="section pb-0">
-        <table class="table table-bordered">
+        <!-- Indicador de estado offline -->
+        <div id="offlineMessage" class="alert alert-warning" role="alert">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          Estás en modo sin conexión. Algunas funciones podrían no estar
+          disponibles.
+        </div>
+
+        <table id="urlsTable" class="table table-bordered">
           <thead>
             <tr>
               <th><i class="fas fa-link mr-2"></i>URL Original</th>
@@ -506,6 +547,13 @@
                   th:href="'http://localhost:7000/' + ${url.urlNuevo}"
                   target="_blank"
                 ></a>
+                <!-- Indicador de sincronización para URLs offline -->
+                <span
+                  th:if="${url.syncStatus == 'pending'}"
+                  class="badge badge-warning ml-2"
+                >
+                  <i class="fas fa-sync-alt syncing-icon mr-1"></i> Pendiente
+                </span>
               </td>
               <td>
                 <span
@@ -673,9 +721,60 @@
       </div>
     </div>
 
+    <!-- Modal de Offline -->
+    <div
+      class="modal fade"
+      id="offlineModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="offlineModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="offlineModalLabel">
+              <i class="fas fa-wifi-slash mr-2"></i> Modo Sin Conexión
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Has creado una URL en modo sin conexión. Se sincronizará
+              automáticamente cuando se recupere la conexión a internet.
+            </p>
+            <p>
+              Por ahora, puedes ver la URL acortada temporal en la tabla de
+              abajo.
+            </p>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">
+              <i class="fas fa-check mr-2"></i> Entendido
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- jQuery, Bootstrap JS and other scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Scripts para soporte offline -->
+    <script src="/js/db.js"></script>
+    <script src="/js/offline.js"></script>
+
+    <script>
+      navigator.serviceWorker.register("/service-worker.js");
+    </script>
 
     <!-- QR Code Generator Script -->
     <script>
@@ -777,7 +876,7 @@
       });
     </script>
 
-    <!-- Login required script -->
+    <!-- Login required script modificado para soporte offline -->
     <script th:inline="javascript">
       /*<![CDATA[*/
       $(document).ready(function () {
@@ -786,6 +885,28 @@
           if (username == null) {
             e.preventDefault();
             $("#loginModal").modal("show");
+            return;
+          }
+
+          // Verificar si estamos offline
+          if (!navigator.onLine) {
+            e.preventDefault();
+            const urlInput = document.getElementById("myInput");
+            if (urlInput && urlInput.value) {
+              window.createUrlOffline(urlInput.value).then((success) => {
+                if (success) {
+                  // Limpiar formulario y mostrar mensaje
+                  urlInput.value = "";
+                  $("#link-preview").html("");
+
+                  // Mostrar modal de creación offline
+                  $("#offlineModal").modal("show");
+
+                  // Recargar las URLs locales
+                  window.loadOfflineUrls();
+                }
+              });
+            }
           }
         });
       });

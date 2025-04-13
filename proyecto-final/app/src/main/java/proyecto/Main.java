@@ -45,6 +45,7 @@ public class Main {
             }
         }).start();
         Javalin app = Javalin.create(config -> {
+
             config.staticFiles.add(staticFileConfig -> {
                 staticFileConfig.hostedPath = "/";
                 staticFileConfig.directory = "public/templates";
@@ -52,6 +53,15 @@ public class Main {
                 staticFileConfig.precompress = false;
                 staticFileConfig.aliasCheck = null;
             });
+
+            config.staticFiles.add(staticFileConfig -> {
+                staticFileConfig.hostedPath = "/";
+                staticFileConfig.directory = "public";
+                staticFileConfig.location = Location.CLASSPATH;
+                staticFileConfig.precompress = false;
+                staticFileConfig.aliasCheck = null;
+            });
+
         }).start(7000);
 
         new HomeController(app).aplicarRutas();

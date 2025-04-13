@@ -91,8 +91,8 @@ public class URLController extends BaseController {
             URLServices.getInstance().deleteByShortURL(shortUrl);
             ctx.redirect("/");
         });
-        // =================================REST
-        // services=================================================================
+
+        // REST SERVICES
         // (a) Listado de las URL publicadas por un usuario incluyendo las estadísticas
         // asociadas.
         app.get("/url/api-list/{username}", ctx -> {
@@ -174,9 +174,72 @@ public class URLController extends BaseController {
             ctx.json(model);
         });
 
+        app.post("/url/sync", ctx -> {
+            if (ctx.sessionAttribute("username") == null) {
+                ctx.status(401);
+                return;
+            }
+
+            try {
+                // Parsear el cuerpo de la petición
+                String body = ctx.body();
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new JavaTimeModule());
+
+                // Convertir a objeto URL
+                URL url = mapper.readValue(body, URL.class);
+
+                // Verificar si la URL ya existe
+                URL existingUrl = URLServices.getInstance().findByShortURL(url.getUrlNuevo());
+                if (existingUrl != null) {
+                    ctx.status(200); // No hacer nada si ya existe
+                    return;
+                }
+
+                // Si es una URL temporal creada offline, generar una nueva URL corta
+                if (url.getUrlNuevo().startsWith("temp_")) {
+                    url.setUrlNuevo(generateShortUrl(url.getUrlViejo()));
+                }
+
+                // Asegurarse de que tenga un ID válido
+                if (url.getId() == null || url.getId().toString().startsWith("temp_")) {
+                    url.setId(new ObjectId());
+                }
+
+                // Asegurarse de que el usuario sea correcto
+                Usuario user = ctx.sessionAttribute("username");
+                url.setUsuario(user.getUsername());
+
+                // Guardar en la base de datos
+                URLServices.getInstance().crear(url);
+
+                // Devolver la URL actualizada
+                ctx.json(url);
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500);
+                ctx.result("Error al sincronizar: " + e.getMessage());
+            }
+        });
+
+        // Endpoint adicional para listar URLs del usuario actual en formato JSON
+        app.get("/url/list", ctx -> {
+            if (ctx.sessionAttribute("username") == null) {
+                ctx.redirect("/user/login");
+                return;
+            }
+
+            Usuario user = ctx.sessionAttribute("username");
+            List<URL> urls = URLServices.getInstance().findByUsername(user.getUsername());
+
+            Map<String, Object> model = new HashMap<>();
+            model.put("urls", urls);
+
+            ctx.json(model);
+        });
+
     }
 
-    // ==================================================================================================
     private String generateShortUrl(String originalUrl) {
         try {
             String originalUrlWithTimestamp = originalUrl + System.currentTimeMillis();

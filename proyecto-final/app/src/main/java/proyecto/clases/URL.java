@@ -17,6 +17,7 @@ public class URL {
     private boolean activo;
     private int clicks;
     private Date fechaCreacion;
+    private String syncStatus;
 
     public URL(ObjectId id, String urlViejo, String urlNuevo, String usuario, boolean activo) {
         this.id = id;
@@ -26,6 +27,7 @@ public class URL {
         this.activo = activo;
         this.clicks = 0;
         this.fechaCreacion = new Date();
+        this.syncStatus = "Sincronizado"; // Valor por defecto
     }
 
     public URL() {
@@ -86,4 +88,13 @@ public class URL {
     public void setFechaCreacion(Date fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
+
+    public String getSyncStatus() {
+        return syncStatus;
+    }
+
+    public void setSyncStatus(String syncStatus) {
+        this.syncStatus = syncStatus;
+    }
+
 }
