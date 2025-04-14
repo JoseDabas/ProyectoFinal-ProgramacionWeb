@@ -543,8 +543,8 @@
               <td>
                 <a
                   class="text-primary"
-                  th:text="'http://localhost:7000/' + ${url.urlNuevo}"
-                  th:href="'http://localhost:7000/' + ${url.urlNuevo}"
+                  th:text="'http://shorturl.turnos.do/' + ${url.urlNuevo}"
+                  th:href="'http://shorturl.turnos.do/' + ${url.urlNuevo}"
                   target="_blank"
                 ></a>
                 <!-- Indicador de sincronización para URLs offline -->
@@ -566,7 +566,7 @@
                   class="btn btn-outline-primary btn-sm"
                   data-toggle="modal"
                   data-target="#qrModal"
-                  th:data-url="'http://localhost:7000/' + ${url.urlNuevo}"
+                  th:data-url="'http://shorturl.turnos.do/' + ${url.urlNuevo}"
                   onclick="generateQRCode('qrcodeModal', this.getAttribute('data-url'))"
                 >
                   <i class="fas fa-qrcode mr-1"></i> Ver QR

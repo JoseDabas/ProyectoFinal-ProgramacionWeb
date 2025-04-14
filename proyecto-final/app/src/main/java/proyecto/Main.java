@@ -26,6 +26,8 @@ public class Main {
         System.setProperty("URL_MONGO", dotenv.get("URL_MONGO"));
         System.setProperty("DB_NOMBRE", dotenv.get("DB_NOMBRE"));
 
+        System.setProperty("https.protocols", "TLSv1.2");
+
         // Mostrar las variables para depuración
         System.out.println("URL MongoDB: " + System.getProperty("URL_MONGO"));
         System.out.println("Base de datos: " + System.getProperty("DB_NOMBRE"));
