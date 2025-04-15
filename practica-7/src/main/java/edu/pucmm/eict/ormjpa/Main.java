@@ -1,9 +1,8 @@
 package edu.pucmm.eict.ormjpa;
 
-// --- Tus imports existentes ---
 import com.fasterxml.jackson.databind.node.TextNode;
 import edu.pucmm.eict.ormjpa.controladores.EstudianteControlador;
-import edu.pucmm.eict.ormjpa.controladores.EstudianteGrpcControlador; // Controlador puente
+import edu.pucmm.eict.ormjpa.controladores.EstudianteGrpcControlador;
 import edu.pucmm.eict.ormjpa.controladores.FotoControlador;
 import edu.pucmm.eict.ormjpa.controladores.ProfesorControlador;
 import edu.pucmm.eict.ormjpa.modelos.Estudiante;
@@ -18,17 +17,19 @@ import io.javalin.openapi.plugin.redoc.ReDocPlugin;
 import io.javalin.openapi.plugin.swagger.SwaggerPlugin;
 import io.javalin.rendering.template.JavalinThymeleaf;
 import io.javalin.security.RouteRole;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 // --- Imports necesarios para gRPC ---
-import edu.pucmm.eict.ormjpa.grpc.EstudianteServiceImpl; // Importa tu implementación
+import edu.pucmm.eict.ormjpa.grpc.EstudianteServiceImpl;
 import edu.pucmm.eict.ormjpa.grpc.TempClasses.EstudianteServiceGrpc.EstudianteServiceImplBase;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import io.grpc.BindableService; // Añadimos esta importación
-import java.io.IOException; // Necesario para startGrpcServer
+import io.grpc.BindableService;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit; // Necesario para stopGrpcServer
+import java.util.concurrent.TimeUnit;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
 
@@ -45,7 +46,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        String mensaje = "Software ORM - JPA y Servidor gRPC"; // Mensaje actualizado
+        String mensaje = "Software ORM - JPA y Servidor gRPC";
         System.out.println(mensaje);
         if (args.length >= 1) {
             modoConexion = args[0];
@@ -59,11 +60,11 @@ public class Main {
 
         // creando los objetos por defecto.
         try {
-            for (int i = 0; i < 10; i++) { // Reducido a 10 para el ejemplo
+            for (int i = 0; i < 10; i++) {
                 if (EstudianteServices.getInstancia().find(i) == null) {
                     EstudianteServices.getInstancia().crear(new Estudiante(i, "nombre " + i));
                 }
-                if (ProfesorServices.getInstancia().find(i) == null) { // Asumiendo ID entero para profesor
+                if (ProfesorServices.getInstancia().find(i) == null) {
                     ProfesorServices.getInstancia().crear(new Profesor("Profesor " + i));
                 }
             }
@@ -99,11 +100,11 @@ public class Main {
             // Configuración para archivos estáticos
             config.staticFiles.add(staticFileConfig -> {
                 staticFileConfig.hostedPath = "/";
-                staticFileConfig.directory = "/publico";
+                staticFileConfig.directory = "/";
                 staticFileConfig.location = Location.CLASSPATH;
             });
 
-            // Configuración del renderizador de plantillas
+            // Configuración básica de Thymeleaf
             config.fileRenderer(new JavalinThymeleaf());
 
             // Configuración de rutas API
@@ -173,7 +174,7 @@ public class Main {
             config.registerPlugin(new ReDocPlugin(reDocConfiguration -> {
             }));
 
-        }).start(getHerokuAssignedPort()); // Inicia Javalin en su puerto
+        }).start(getHerokuAssignedPort());
 
         // Configurar CORS después de iniciar Javalin
         app.before(ctx -> {
@@ -186,32 +187,11 @@ public class Main {
             }
         });
 
-        // Endpoint de inicio Javalin
+        // Endpoint de inicio.
         app.get("/", ctx -> {
-            ctx.redirect("/grpc-client");
-        });
-
-        // Endpoint para servir el cliente gRPC HTML desde templates
-        app.get("/grpc-client", ctx -> {
-            Map<String, Object> model = new HashMap<>();
-            model.put("baseUrl", ctx.url().split("/grpc-client")[0]);
-            model.put("titulo", "Cliente gRPC - Gestión de Estudiantes");
-            ctx.render("/templates/ClienteGRPC.html", model);
-        });
-
-        // Alias para el cliente
-        app.get("/cliente", ctx -> {
-            ctx.redirect("/grpc-client");
-        });
-
-        app.get("/grpc", ctx -> {
-            ctx.redirect("/grpc-client");
-        });
-
-        // Endpoint de prueba Javalin
-        app.get("/prueba", ctx -> {
-            EstudianteServices.getInstancia().pruebaActualizacion();
-            ctx.result("Bien!...");
+            Map<String, Object> modelo = new HashMap<>();
+            // Si necesitas pasar alguna variable al template, la agregarías al modelo
+            ctx.render("/templates/ClienteGRPC.html", modelo);
         });
 
         // Manejo de excepciones Javalin
