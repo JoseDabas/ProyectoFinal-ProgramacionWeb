@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente gRPC - Gestión de Estudiantes</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 10px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .btn-floating {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-connected {
+            background-color: #28a745;
+        }
+        .status-disconnected {
+            background-color: #dc3545;
+        }
+        .student-card {
+            margin-bottom: 20px;
+        }
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .form-floating {
+            margin-bottom: 20px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .empty-state i {
+            font-size: 80px;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap"></i>
+                Sistema de Gestión de Estudiantes
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="connection-status">
+                            <span class="status-indicator status-disconnected"></span>
+                            Desconectado
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title">
+                                <i class="fas fa-users me-2"></i>Listado de Estudiantes
+                            </h5>
+                            <div class="d-flex">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="search-input" placeholder="Buscar estudiante...">
+                                    <button class="btn btn-outline-secondary" type="button" id="search-button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-primary ms-2" id="refresh-button">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading spinner -->
+                        <div class="loading-spinner" id="loading-spinner">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2">Cargando estudiantes...</p>
+                        </div>
+                        
+                        <!-- Estado vacío -->
+                        <div class="empty-state" id="empty-state">
+                            <i class="fas fa-user-graduate"></i>
+                            <h3>No hay estudiantes registrados</h3>
+                            <p class="text-muted">Agrega un nuevo estudiante con el botón de abajo</p>
+                            <button class="btn btn-primary mt-3" id="btn-add-empty">
+                                <i class="fas fa-plus me-2"></i>Agregar Estudiante
+                            </button>
+                        </div>
+
+                        <!-- Listado de estudiantes -->
+                        <div class="row" id="students-container">
+                            <!-- Las tarjetas de estudiantes se generarán dinámicamente aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón flotante para agregar estudiante -->
+    <button class="btn btn-primary btn-floating" id="btn-add-floating">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Modal para agregar/editar estudiante -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Agregar Nuevo Estudiante</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="studentForm">
+                        <input type="hidden" id="editingMatricula" value="">
+                        <div class="form-floating mb-3">
+                            <input type="number" class="form-control" id="matricula" placeholder="Matrícula" required>
+                            <label for="matricula">Matrícula</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="nombre" placeholder="Nombre Completo" required>
+                            <label for="nombre">Nombre Completo</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveButton">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar al estudiante <span id="deleteStudentName"></span>?</p>
+                    <p class="text-danger">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast para notificaciones -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="notification-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notificación</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Hello, world! This is a toast message.
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Cliente para comunicarse con el servidor a través del puente REST-gRPC
+        class EstudianteClient {
+            constructor() {
+                this.connected = false;
+                this.baseUrl = window.location.origin + '/grpc-bridge';
+            }
+
+            async connect() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/estudiante`);
+                    this.connected = response.ok;
+                    return this.connected;
+                } catch (error) {
+                    this.connected = false;
+                    return false;
+                }
+            }
+
+            async listarEstudiantes() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/estudiante`);
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    // La respuesta del servidor contiene estudiantes en un array dentro de un objeto
+                    if (data && Array.isArray(data.estudiantes)) {
+                        return data.estudiantes;
+                    }
+                    
+                    // Si los estudiantes no están en data.estudiantes, podría estar en otro formato
+                    if (data && Array.isArray(data)) {
+                        return data;
+                    }
+                    
+                    // Si todo lo demás falla, devolver un array vacío
+                    return [];
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            async consultarEstudiante(matricula) {
+                try {
+                    const response = await fetch(`${this.baseUrl}/estudiante/${matricula}`);
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            return null;
+                        }
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            async crearEstudiante(estudiante) {
+                try {
+                    const response = await fetch(`${this.baseUrl}/estudiante`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(estudiante)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    // Manejamos el formato de respuesta del servidor
+                    if (!response.ok) {
+                        return {
+                            exito: false,
+                            mensaje: result.error || result.mensaje || `Error al crear estudiante: ${response.status}`
+                        };
+                    }
+                    
+                    return {
+                        exito: result.exito,
+                        mensaje: result.mensaje
+                    };
+                } catch (error) {
+                    return {
+                        exito: false,
+                        mensaje: error.message || "Error al comunicarse con el servidor"
+                    };
+                }
+            }
+
+            async editarEstudiante(estudiante) {
+                try {
+                    // Primero consultamos para verificar que existe
+                    const existe = await this.consultarEstudiante(estudiante.matricula);
+                    
+                    if (!existe) {
+                        return {
+                            exito: false,
+                            mensaje: `El estudiante con matrícula ${estudiante.matricula} no existe.`
+                        };
+                    }
+                    
+                    // Como workaround, eliminamos el estudiante
+                    await this.borrarEstudiante(estudiante.matricula);
+                    
+                    // Y lo creamos de nuevo con los datos actualizados
+                    const resultado = await this.crearEstudiante(estudiante);
+                    
+                    if (resultado.exito) {
+                        return {
+                            exito: true,
+                            mensaje: `Estudiante con matrícula ${estudiante.matricula} actualizado exitosamente.`
+                        };
+                    } else {
+                        return resultado;
+                    }
+                } catch (error) {
+                    return {
+                        exito: false,
+                        mensaje: error.message || "Error al comunicarse con el servidor"
+                    };
+                }
+            }
+
+            async borrarEstudiante(matricula) {
+                try {
+                    const response = await fetch(`${this.baseUrl}/estudiante/${matricula}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        return {
+                            exito: false,
+                            mensaje: result.error || result.mensaje || `Error al eliminar estudiante: ${response.status}`
+                        };
+                    }
+                    
+                    return {
+                        exito: result.exito,
+                        mensaje: result.mensaje
+                    };
+                } catch (error) {
+                    return {
+                        exito: false,
+                        mensaje: error.message || "Error al comunicarse con el servidor"
+                    };
+                }
+            }
+        }
+
+        // Aplicación principal
+        class App {
+            constructor() {
+                this.client = new EstudianteClient();
+                this.toastElement = document.getElementById('notification-toast');
+                this.toast = new bootstrap.Toast(this.toastElement);
+                this.selectedMatricula = null;
+                this.studentModal = null;
+                
+                // Inicializamos la interfaz
+                this.init();
+            }
+
+            async init() {
+                // Inicializar modal como variable de clase
+                this.studentModal = new bootstrap.Modal(document.getElementById('addStudentModal'));
+                
+                // Conectamos al servidor gRPC
+                this.updateConnectionStatus(false, "Conectando...");
+                try {
+                    await this.client.connect();
+                    this.updateConnectionStatus(true, "Conectado");
+                    // Quitamos la notificación de conexión exitosa
+                } catch (error) {
+                    this.updateConnectionStatus(false, "Error de conexión");
+                    this.showNotification("Error de conexión", "No se pudo conectar al servidor gRPC", true);
+                }
+
+                // Cargamos los estudiantes
+                this.loadStudents();
+
+                // Configuramos los event listeners
+                this.setupEventListeners();
+            }
+
+            updateConnectionStatus(connected, text) {
+                const statusEl = document.getElementById('connection-status');
+                const indicator = statusEl.querySelector('.status-indicator');
+                
+                if (connected) {
+                    indicator.classList.remove('status-disconnected');
+                    indicator.classList.add('status-connected');
+                } else {
+                    indicator.classList.remove('status-connected');
+                    indicator.classList.add('status-disconnected');
+                }
+                
+                statusEl.innerHTML = `<span class="status-indicator ${connected ? 'status-connected' : 'status-disconnected'}"></span>${text}`;
+            }
+
+            showNotification(title, message, isError = false) {
+                const toastTitle = document.getElementById('toast-title');
+                const toastMessage = document.getElementById('toast-message');
+                
+                toastTitle.textContent = title;
+                toastMessage.textContent = message;
+                
+                if (isError) {
+                    this.toastElement.classList.add('bg-danger', 'text-white');
+                } else {
+                    this.toastElement.classList.remove('bg-danger', 'text-white');
+                }
+                
+                this.toast.show();
+            }
+
+            async loadStudents() {
+                // Mostrar spinner
+                document.getElementById('loading-spinner').style.display = 'block';
+                document.getElementById('empty-state').style.display = 'none';
+                document.getElementById('students-container').innerHTML = '';
+                
+                try {
+                    const estudiantes = await this.client.listarEstudiantes();
+                    
+                    // Ocultar spinner
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    
+                    if (!estudiantes || estudiantes.length === 0) {
+                        document.getElementById('empty-state').style.display = 'block';
+                    } else {
+                        this.renderStudents(estudiantes);
+                    }
+                } catch (error) {
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    document.getElementById('empty-state').style.display = 'block';
+                    document.getElementById('empty-state').querySelector('h3').textContent = 'Error al cargar estudiantes';
+                    document.getElementById('empty-state').querySelector('p').textContent = 'Ocurrió un error al comunicarse con el servidor';
+                    this.showNotification("Error", "No se pudieron cargar los estudiantes", true);
+                }
+            }
+
+            renderStudents(estudiantes) {
+                const container = document.getElementById('students-container');
+                container.innerHTML = '';
+                
+                estudiantes.forEach(estudiante => {
+                    const cardHtml = this.createStudentCard(estudiante);
+                    container.innerHTML += cardHtml;
+                });
+
+                // Añadimos los event listeners a los botones de acción
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const matricula = parseInt(e.currentTarget.dataset.matricula);
+                        const nombre = e.currentTarget.dataset.nombre;
+                        this.openEditModal(matricula, nombre);
+                    });
+                });
+
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const matricula = parseInt(e.currentTarget.dataset.matricula);
+                        const nombre = e.currentTarget.dataset.nombre;
+                        this.openDeleteModal(matricula, nombre);
+                    });
+                });
+            }
+
+            createStudentCard(estudiante) {
+                return `
+                <div class="col-md-6 col-xl-4 student-card fade-in">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title">${estudiante.nombre}</h5>
+                                <span class="badge bg-primary">ID: ${estudiante.matricula}</span>
+                            </div>
+                            <p class="card-text text-muted">
+                                <i class="fas fa-id-card me-2"></i>Matrícula: ${estudiante.matricula}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-secondary me-2 btn-edit" 
+                                    data-matricula="${estudiante.matricula}" data-nombre="${estudiante.nombre}">
+                                    <i class="fas fa-edit me-1"></i>Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-delete"
+                                    data-matricula="${estudiante.matricula}" data-nombre="${estudiante.nombre}">
+                                    <i class="fas fa-trash-alt me-1"></i>Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            openAddModal() {
+                const modalEl = document.getElementById('addStudentModal');
+                const modalTitle = modalEl.querySelector('.modal-title');
+                const form = document.getElementById('studentForm');
+                
+                modalTitle.textContent = 'Agregar Nuevo Estudiante';
+                form.reset();
+                document.getElementById('editingMatricula').value = '';
+                document.getElementById('matricula').disabled = false;
+                
+                this.studentModal.show();
+            }
+
+            openEditModal(matricula, nombre) {
+                const modalEl = document.getElementById('addStudentModal');
+                const modalTitle = modalEl.querySelector('.modal-title');
+                
+                modalTitle.textContent = 'Editar Estudiante';
+                document.getElementById('editingMatricula').value = matricula;
+                document.getElementById('matricula').value = matricula;
+                document.getElementById('matricula').disabled = true;
+                document.getElementById('nombre').value = nombre;
+                
+                this.studentModal.show();
+            }
+
+            openDeleteModal(matricula, nombre) {
+                const modal = document.getElementById('deleteConfirmModal');
+                document.getElementById('deleteStudentName').textContent = nombre;
+                this.selectedMatricula = matricula;
+                
+                const modalInstance = new bootstrap.Modal(modal);
+                modalInstance.show();
+            }
+
+            setupEventListeners() {
+                // Botón de actualizar
+                document.getElementById('refresh-button').addEventListener('click', () => {
+                    this.loadStudents();
+                });
+                
+                // Botones para agregar estudiante
+                document.getElementById('btn-add-floating').addEventListener('click', () => {
+                    this.openAddModal();
+                });
+                
+                document.getElementById('btn-add-empty').addEventListener('click', () => {
+                    this.openAddModal();
+                });
+                
+                // Botón de guardar estudiante
+                document.getElementById('saveButton').addEventListener('click', async () => {
+                    const matricula = parseInt(document.getElementById('matricula').value);
+                    const nombre = document.getElementById('nombre').value;
+                    const editingMatricula = document.getElementById('editingMatricula').value;
+                    
+                    if (!matricula || !nombre) {
+                        this.showNotification("Error", "Todos los campos son obligatorios", true);
+                        return;
+                    }
+                    
+                    // Ocultamos el modal antes de la operación para evitar problemas
+                    this.studentModal.hide();
+                    
+                    let result;
+                    if (editingMatricula) {
+                        // Estamos editando
+                        result = await this.client.editarEstudiante({ matricula, nombre });
+                    } else {
+                        // Estamos creando
+                        result = await this.client.crearEstudiante({ matricula, nombre });
+                    }
+                    
+                    if (result.exito) {
+                        this.showNotification("Éxito", result.mensaje);
+                        // Recargar estudiantes después de que el modal se haya cerrado
+                        setTimeout(() => {
+                            this.loadStudents();
+                        }, 300);
+                    } else {
+                        this.showNotification("Error", result.mensaje, true);
+                    }
+                });
+                
+                // Botón de confirmar eliminación
+                document.getElementById('confirmDeleteButton').addEventListener('click', async () => {
+                    if (!this.selectedMatricula) return;
+                    
+                    // Ocultar el modal de confirmación
+                    bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+                    
+                    const result = await this.client.borrarEstudiante(this.selectedMatricula);
+                    
+                    if (result.exito) {
+                        this.showNotification("Éxito", result.mensaje);
+                        // Recargar la lista después de un breve retraso
+                        setTimeout(() => {
+                            this.loadStudents();
+                        }, 300);
+                    } else {
+                        this.showNotification("Error", result.mensaje, true);
+                    }
+                    
+                    this.selectedMatricula = null;
+                });
+                
+                // Búsqueda de estudiantes
+                document.getElementById('search-button').addEventListener('click', () => {
+                    this.searchStudents();
+                });
+                
+                document.getElementById('search-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.searchStudents();
+                    }
+                });
+            }
+            
+            async searchStudents() {
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                
+                if (!searchTerm) {
+                    this.loadStudents();
+                    return;
+                }
+                
+                document.getElementById('loading-spinner').style.display = 'block';
+                document.getElementById('empty-state').style.display = 'none';
+                document.getElementById('students-container').innerHTML = '';
+                
+                try {
+                    const allEstudiantes = await this.client.listarEstudiantes();
+                    const filteredEstudiantes = allEstudiantes.filter(e => 
+                        e.nombre.toLowerCase().includes(searchTerm) || 
+                        e.matricula.toString().includes(searchTerm)
+                    );
+                    
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    
+                    if (filteredEstudiantes.length === 0) {
+                        document.getElementById('empty-state').style.display = 'block';
+                        document.getElementById('empty-state').querySelector('h3').textContent = 'No se encontraron estudiantes';
+                        document.getElementById('empty-state').querySelector('p').textContent = 'Intenta con otra búsqueda';
+                    } else {
+                        this.renderStudents(filteredEstudiantes);
+                    }
+                } catch (error) {
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    document.getElementById('empty-state').style.display = 'block';
+                    this.showNotification("Error", "No se pudo realizar la búsqueda", true);
+                }
+            }
+        }
+
+        // Iniciar la aplicación cuando el DOM esté cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new App();
+        });
+    </script>
+</body>
+</html>

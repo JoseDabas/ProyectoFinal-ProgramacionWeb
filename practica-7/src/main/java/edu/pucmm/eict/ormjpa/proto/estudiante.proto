@@ -1,0 +1,52 @@
+// src/main/proto/estudiante.proto
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "edu.pucmm.grpc"; // Paquete donde se generará el código Java
+option java_outer_classname = "EstudianteProto"; // Nombre de la clase contenedora
+
+// --- Mensajes ---
+
+// Representa la entidad Estudiante para la comunicación gRPC
+message EstudianteMessage {
+  int32 matricula = 1;
+  string nombre = 2;
+  // Podrías añadir fechaNacimiento si es relevante. Protobuf tiene google.protobuf.Timestamp
+  // pero para simplificar, usaremos string (YYYY-MM-DD) o podrías omitirlo.
+  // google.protobuf.Timestamp fechaNacimiento = 3;
+}
+
+// Mensaje vacío, usado cuando una petición no necesita parámetros
+message Empty {}
+
+// Lista de Estudiantes
+message ListaEstudiantes {
+  repeated EstudianteMessage estudiantes = 1;
+}
+
+// Request para operaciones que usan la matrícula
+message MatriculaRequest {
+  int32 matricula = 1;
+}
+
+// Mensaje genérico para indicar el resultado de una operación (Crear/Borrar)
+message Resultado {
+  string mensaje = 1;
+  bool exito = 2;
+}
+
+// --- Servicio ---
+
+service EstudianteService {
+  // Listar Todos los estudiantes
+  rpc ListarEstudiantes (Empty) returns (ListaEstudiantes);
+
+  // Consultar un Estudiante por matrícula
+  rpc ConsultarEstudiante (MatriculaRequest) returns (EstudianteMessage);
+
+  // Crear un nuevo estudiante
+  rpc CrearEstudiante (EstudianteMessage) returns (Resultado);
+
+  // Borrar un estudiante por matrícula
+  rpc BorrarEstudiante (MatriculaRequest) returns (Resultado);
+}
