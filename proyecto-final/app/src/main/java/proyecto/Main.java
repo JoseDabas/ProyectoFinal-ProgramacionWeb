@@ -14,17 +14,17 @@ import proyecto.controllers.UserController;
 import proyecto.grpc.UrlServiceImpl;
 import proyecto.services.UserServices;
 
-import io.github.cdimascio.dotenv.Dotenv;
+//import io.github.cdimascio.dotenv.Dotenv;
 
 public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // Cargar variables de entorno desde el archivo .env
-        Dotenv dotenv = Dotenv.configure().load();
 
         // Establecer las propiedades del sistema para MongoDB
-        System.setProperty("URL_MONGO", dotenv.get("URL_MONGO"));
-        System.setProperty("DB_NOMBRE", dotenv.get("DB_NOMBRE"));
+        System.setProperty("URL_MONGO",
+                "mongodb+srv://josearieldabas01:HL4OcEYAGqynX5Jj@josedatabase.7dkjm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
+        System.setProperty("DB_NOMBRE", "proyecto_final");
 
         System.setProperty("https.protocols", "TLSv1.2");
 
