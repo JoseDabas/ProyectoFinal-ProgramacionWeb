@@ -1,3 +1,5 @@
+Link del Video: https://www.youtube.com/watch?v=PeEUbEjYbOc
+
 URL_MONGO="mongodb+srv://josearieldabas01:HL4OcEYAGqynX5Jj@josedatabase.7dkjm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 DB_NOMBRE="proyecto_final"
 
